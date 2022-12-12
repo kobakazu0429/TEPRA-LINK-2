@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TEPRA LINK 2 - Table Generator</title>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+
+      td {
+        border: solid 1px black;
+        width: 100px;
+      }
+
+      .not-editable {
+        cursor: not-allowed;
+        background-color: #d3d3d3;
+      }
+
+      .editable {
+        cursor: text;
+      }
+
+      .col-size,
+      .row-size {
+        background-color: #ffbcbc;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>TEPRA LINK 2 - Table Generator</h1>
+    <ul>
+      <li>background red: size as mm</li>
+      <li>background white: text</li>
+      <li>
+        copy to
+        ~/Library/Containers/jp.co.kingjim.TEPRA-LINK-2/Data/Documents/TepraDocuments/Default
+      </li>
+    </ul>
+
+    <button class="col-minus">←</button>
+    <button class="col-plus">→</button>
+
+    <button class="row-minus">↑</button>
+    <button class="row-plus">↓</button>
+
+    <button id="reset">Reset</button>
+
+    <button id="sample">Sample</button>
+
+    <button id="dl">DL</button>
+
+    <hr />
+
+    <table>
+      <tbody>
+        <tr>
+          <td class="not-editable"></td>
+          <td contenteditable="true" class="col-size"></td>
+          <td contenteditable="true" class="col-size"></td>
+        </tr>
+        <tr>
+          <td contenteditable="true" class="row-size"></td>
+          <td contenteditable="true"></td>
+          <td contenteditable="true"></td>
+        </tr>
+        <tr>
+          <td contenteditable="true" class="row-size"></td>
+          <td contenteditable="true"></td>
+          <td contenteditable="true"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script>
+      const colMinus = () => {
+        const tr = document.querySelector("tr");
+        const colSize = tr.querySelectorAll("td").length;
+        if (colSize > 2) {
+          document
+            .querySelectorAll("tr")
+            .forEach((tr) => tr.querySelector("td:last-child").remove());
+          return true;
+        } else {
+          return false;
+        }
+      };
+      const colPlus = () => {
+        const trs = document.querySelectorAll("tr");
+        trs.forEach((tr, i) => {
+          const td = document.createElement("td");
+          td.contentEditable = "true";
+          if (i === 0) {
+            td.className = "col-size";
+          }
+          tr.appendChild(td);
+        });
+      };
+      const rowMinus = () => {
+        const rowSize = document.querySelectorAll("tr").length;
+        if (rowSize > 2) {
+          document.querySelector("tr:last-child").remove();
+          return true;
+        } else {
+          return false;
+        }
+      };
+      const rowPlus = () => {
+        const tr = document.querySelector("tr");
+        const colSize = tr.querySelectorAll("td").length;
+        const newTr = document.createElement("tr");
+        Array.from({ length: colSize }).forEach((_, i) => {
+          const td = document.createElement("td");
+          td.contentEditable = "true";
+          if (i === 0) {
+            td.className = "row-size";
+          }
+          newTr.appendChild(td);
+        });
+        document.querySelector("tbody").appendChild(newTr);
+      };
+
+      const reset = () => {
+        // document.querySelector("table").innerHTML = `
+        //   <tbody>
+        //     <tr>
+        //       <td class="not-editable"></td>
+        //       <td contenteditable="true" class="col-size"></td>
+        //     </tr>
+        //     <tr>
+        //       <td contenteditable="true" class="row-size"></td>
+        //       <td contenteditable="true"></td>
+        //     </tr>
+        //   </tbody>
+        // `;
+        while (colMinus());
+        while (rowMinus());
+        document.querySelectorAll("td").forEach((el) => (el.textContent = ""));
+      };
+
+      document.querySelector(".col-minus").addEventListener("click", colMinus);
+      document.querySelector(".col-plus").addEventListener("click", colPlus);
+      document.querySelector(".row-minus").addEventListener("click", rowMinus);
+      document.querySelector(".row-plus").addEventListener("click", rowPlus);
+
+      document.getElementById("reset").addEventListener("click", reset);
+      document.getElementById("sample").addEventListener("click", () => {
+        reset();
+
+        const height = [4.5, 4.5, 4.5, 4.5];
+        const width = [15, 35];
+        const text = [
+          "氏名",
+          "高専　太郎",
+          "学生番号",
+          "1202299",
+          "用途",
+          "○○部",
+          "保管開始日",
+          "2022.12.01",
+        ];
+
+        height.slice(0, -1).forEach((_) => rowPlus());
+        width.slice(0, -1).forEach((_) => colPlus());
+        document
+          .querySelectorAll("td.row-size")
+          .forEach((el, i) => (el.textContent = height[i]));
+        document
+          .querySelectorAll("td.col-size")
+          .forEach((el, i) => (el.textContent = width[i]));
+        document
+          .querySelectorAll(
+            "td:not(.not-editable):not(.col-size):not(.row-size)"
+          )
+          .forEach((el, i) => (el.textContent = text[i]));
+      });
+    </script>
+
+    <script type="module">
+      import { build } from "./index.js";
+
+      const tm2Download = (data, filename) => {
+        const blob = new Blob([JSON.stringify(data)], {
+          type: "application/json",
+        });
+        const dummy = document.createElement("a");
+        document.body.appendChild(dummy);
+        dummy.href = URL.createObjectURL(blob);
+        dummy.download = `${filename}.tm2`;
+        dummy.click();
+        document.body.removeChild(dummy);
+      };
+
+      document.getElementById("dl").addEventListener("click", () => {
+        const width = Array.from(document.querySelectorAll("td.col-size")).map(
+          (el) => parseFloat(el.textContent, 10)
+        );
+        const height = Array.from(document.querySelectorAll("td.row-size")).map(
+          (el) => parseFloat(el.textContent, 10)
+        );
+        const text = Array.from(
+          document.querySelectorAll(
+            "td:not(.not-editable):not(.col-size):not(.row-size)"
+          )
+        ).map((el) => el.textContent);
+
+        if (
+          !width.every((v) => typeof v === "number") ||
+          !height.every((v) => typeof v === "number") ||
+          width.some((v) => Number.isNaN(v)) ||
+          height.some((v) => Number.isNaN(v))
+        ) {
+          alert("sizes are must be number");
+        }
+
+        const result = build({
+          isAutoLength: false,
+          margin: 3,
+          width,
+          height,
+          text,
+        });
+        const filename = new Date()
+          .toLocaleString()
+          .replaceAll("/", "-")
+          .replaceAll(":", "-")
+          .replaceAll(" ", "_");
+        tm2Download(result, filename);
+      });
+    </script>
+  </body>
+</html>
