@@ -172,7 +172,7 @@
           "用途",
           "○○部",
           "保管開始日",
-          "2022.12.01",
+          new Date().toISOString().slice(0, 10).replaceAll("-", "."),
         ];
 
         height.slice(0, -1).forEach((_) => rowPlus());
