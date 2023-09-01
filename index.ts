@@ -16,7 +16,7 @@ const FONT_NAME = "OTBGoStdR-Normal";
 const FONT_SIZE = 7;
 
 const TAPES = {
-  24: {},
+  36: {},
 };
 
 type Width = {
@@ -163,9 +163,9 @@ export const build = (options: Options) => {
         SettingsForegroundColor: BLACK,
         SettingsForegroundColorName: "黒",
         SettingsMargin: 0,
-        SettingsPrintableArea: toPx(24),
+        SettingsPrintableArea: toPx(36),
         SettingsTapeVertical: false,
-        SettingsTapeWidth: 24,
+        SettingsTapeWidth: 36,
         drawers: [table],
         frame: buildFrame(0, 0, w, h),
         identifier: id(),
